@@ -3,497 +3,257 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CivicConnect - Citizen-Powered Civic Issue Tracker</title>
+    <title>CityBus - Real-time Bus Tracking</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="description" content="Real-time bus tracking for small cities">
+    <meta name="theme-color" content="#2196F3">
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQ2l0eUJ1cyIsInNob3J0X25hbWUiOiJDaXR5QnVzIiwic3RhcnRfdXJsIjoiLyIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiNmZmZmZmYiLCJ0aGVtZV9jb2xvciI6IiMyMTk2RjMifQ==">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iIzIxOTZGMyIvPgo8cGF0aCBkPSJNOCA5SDI0VjIzSDgiIGZpbGw9IndoaXRlIiBzdHJva2U9IiMyMTk2RjMiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjI2IiByPSIyIiBmaWxsPSIjMjE5NkYzIi8+CjxjaXJjbGUgY3g9IjIwIiBjeT0iMjYiIHI9IjIiIGZpbGw9IiMyMTk2RjMiLz4KPC9zdmc+">
 </head>
 <body>
-    <!-- Landing/Login Page -->
-    <div id="landing-page" class="page-container">
-        <div class="login-container">
-            <div class="login-header">
-                <div class="logo">
-                    <i class="fas fa-city"></i>
-                    <h1>CivicConnect</h1>
-                </div>
-                <p>Citizen-Powered Civic Issue Tracker</p>
-            </div>
-            
-            <div class="role-selection">
-                <h2>Select Your Role</h2>
-                <div class="role-buttons">
-                    <button id="citizen-login" class="btn btn--primary role-btn">
-                        <i class="fas fa-user"></i>
-                        Citizen
-                    </button>
-                    <button id="government-login" class="btn btn--primary role-btn">
-                        <i class="fas fa-shield-alt"></i>
-                        Government Officer
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Citizen Dashboard -->
-    <div id="citizen-dashboard" class="page-container hidden">
-        <!-- Navigation -->
-        <nav class="navbar">
-            <div class="nav-content">
-                <div class="nav-brand">
-                    <i class="fas fa-city"></i>
-                    <span>CivicConnect</span>
-                </div>
-                <div class="nav-actions">
-                    <button class="nav-btn" id="notifications-btn">
-                        <i class="fas fa-bell"></i>
-                        <span class="notification-badge">3</span>
-                    </button>
-                    <div class="user-profile">
-                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='%23626c71'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" alt="Profile" class="profile-img">
-                        <span>Rajesh Kumar</span>
-                    </div>
-                    <button id="logout-btn" class="btn btn--outline btn--sm">Logout</button>
-                </div>
-            </div>
-        </nav>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Report Issue Section -->
-            <section class="report-section">
-                <button id="report-issue-btn" class="btn btn--primary btn--lg report-btn">
-                    <i class="fas fa-plus"></i>
-                    Report Issue
-                </button>
-            </section>
-
-            <!-- Dashboard Tabs -->
-            <div class="dashboard-tabs">
-                <button class="tab-btn active" data-tab="my-issues">My Issues</button>
-                <button class="tab-btn" data-tab="community-map">Community Map</button>
-                <button class="tab-btn" data-tab="profile">Profile & Achievements</button>
-            </div>
-
-            <!-- My Issues Tab -->
-            <div id="my-issues" class="tab-content active">
-                <div class="issues-header">
-                    <h2>My Issues</h2>
-                    <div class="issue-filters">
-                        <select id="status-filter" class="form-control">
-                            <option value="">All Status</option>
-                            <option value="Acknowledged">Acknowledged</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Resolved">Resolved</option>
-                            <option value="Escalated">Escalated</option>
-                        </select>
-                        <select id="category-filter" class="form-control">
-                            <option value="">All Categories</option>
-                            <option value="Roads">Roads</option>
-                            <option value="Sanitation">Sanitation</option>
-                            <option value="Streetlights">Streetlights</option>
-                            <option value="Water">Water</option>
-                            <option value="Parks">Parks</option>
-                            <option value="Electricity">Electricity</option>
-                        </select>
-                    </div>
-                </div>
-                <div id="issues-grid" class="issues-grid">
-                    <!-- Issues will be populated by JavaScript -->
-                </div>
-            </div>
-
-            <!-- Community Map Tab -->
-            <div id="community-map" class="tab-content">
-                <div class="map-header">
-                    <h2>Community Issues Map</h2>
-                    <div class="map-filters">
-                        <button class="filter-btn active" data-filter="all">All</button>
-                        <button class="filter-btn" data-filter="Roads">Roads</button>
-                        <button class="filter-btn" data-filter="Sanitation">Sanitation</button>
-                        <button class="filter-btn" data-filter="Streetlights">Streetlights</button>
-                        <button class="filter-btn" data-filter="Water">Water</button>
-                    </div>
-                </div>
-                <div class="map-container">
-                    <div id="community-map-view" class="map-view">
-                        <!-- Map markers will be populated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Profile & Achievements Tab -->
-            <div id="profile" class="tab-content">
-                <div class="profile-section">
-                    <div class="profile-stats">
-                        <div class="stat-card">
-                            <h3>5</h3>
-                            <p>Issues Reported</p>
-                        </div>
-                        <div class="stat-card">
-                            <h3>3</h3>
-                            <p>Issues Resolved</p>
-                        </div>
-                        <div class="stat-card">
-                            <h3>4.2</h3>
-                            <p>Average Rating</p>
-                        </div>
-                    </div>
-                    
-                    <div class="achievements">
-                        <h3>Achievements & Badges</h3>
-                        <div class="badges-grid">
-                            <div class="badge-item">
-                                <i class="fas fa-flag"></i>
-                                <span>Reporter</span>
-                            </div>
-                            <div class="badge-item">
-                                <i class="fas fa-hands-helping"></i>
-                                <span>Community Helper</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="leaderboard">
-                        <h3>Community Leaderboard</h3>
-                        <div class="leaderboard-list">
-                            <div class="leaderboard-item">
-                                <span class="rank">1</span>
-                                <span class="name">Priya Sharma</span>
-                                <span class="score">8 issues</span>
-                            </div>
-                            <div class="leaderboard-item">
-                                <span class="rank">2</span>
-                                <span class="name">Rajesh Kumar</span>
-                                <span class="score">5 issues</span>
-                            </div>
-                            <div class="leaderboard-item">
-                                <span class="rank">3</span>
-                                <span class="name">Vikram Singh</span>
-                                <span class="score">3 issues</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Government Dashboard -->
-    <div id="government-dashboard" class="page-container hidden">
-        <!-- Navigation -->
-        <nav class="navbar">
-            <div class="nav-content">
-                <div class="nav-brand">
-                    <i class="fas fa-city"></i>
-                    <span>CivicConnect Admin</span>
-                </div>
-                <div class="nav-actions">
-                    <span class="date-display">September 6, 2025</span>
-                    <div class="user-profile">
-                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='%23626c71'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" alt="Profile" class="profile-img">
-                        <span>Admin Officer</span>
-                    </div>
-                    <button id="gov-logout-btn" class="btn btn--outline btn--sm">Logout</button>
-                </div>
-            </div>
-        </nav>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Dashboard Tabs -->
-            <div class="dashboard-tabs">
-                <button class="tab-btn active" data-tab="overview">Overview</button>
-                <button class="tab-btn" data-tab="issue-management">Issue Management</button>
-                <button class="tab-btn" data-tab="analytics">Analytics</button>
-                <button class="tab-btn" data-tab="team-management">Team Management</button>
-            </div>
-
-            <!-- Overview Tab -->
-            <div id="overview" class="tab-content active">
-                <div class="kpi-cards">
-                    <div class="kpi-card">
-                        <div class="kpi-value">152</div>
-                        <div class="kpi-label">Total Issues</div>
-                        <div class="kpi-trend positive">+12%</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-value">48</div>
-                        <div class="kpi-label">Open Issues</div>
-                        <div class="kpi-trend negative">-5%</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-value">90</div>
-                        <div class="kpi-label">Resolved</div>
-                        <div class="kpi-trend positive">+8%</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-value">85%</div>
-                        <div class="kpi-label">SLA Compliance</div>
-                        <div class="kpi-trend positive">+3%</div>
-                    </div>
-                </div>
-
-                <div class="overview-grid">
-                    <div class="overview-section">
-                        <h3>City Heatmap</h3>
-                        <div class="heatmap-container">
-                            <div id="city-heatmap" class="heatmap">
-                                <!-- Heatmap will be populated by JavaScript -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="overview-section">
-                        <h3>Department Performance</h3>
-                        <div class="chart-container" style="position: relative; height: 300px;">
-                            <canvas id="department-chart"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="recent-activity">
-                    <h3>Recent Activity</h3>
-                    <div id="activity-feed" class="activity-feed">
-                        <!-- Activity items will be populated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Issue Management Tab -->
-            <div id="issue-management" class="tab-content">
-                <div class="management-header">
-                    <h2>Issue Management</h2>
-                    <div class="management-filters">
-                        <input type="text" id="search-issues" class="form-control" placeholder="Search issues...">
-                        <select id="dept-filter" class="form-control">
-                            <option value="">All Departments</option>
-                            <option value="Public Works Department">Public Works</option>
-                            <option value="Sanitation Department">Sanitation</option>
-                            <option value="Electrical Department">Electrical</option>
-                            <option value="Water Department">Water</option>
-                        </select>
-                        <select id="priority-filter" class="form-control">
-                            <option value="">All Priorities</option>
-                            <option value="Critical">Critical</option>
-                            <option value="High">High</option>
-                            <option value="Medium">Medium</option>
-                            <option value="Low">Low</option>
-                        </select>
-                        <select id="mgmt-status-filter" class="form-control">
-                            <option value="">All Status</option>
-                            <option value="Acknowledged">Acknowledged</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Resolved">Resolved</option>
-                            <option value="Escalated">Escalated</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="bulk-actions">
-                    <button class="btn btn--secondary btn--sm" id="bulk-assign">Bulk Assign</button>
-                    <button class="btn btn--secondary btn--sm" id="bulk-escalate">Bulk Escalate</button>
-                    <button class="btn btn--secondary btn--sm" id="bulk-resolve">Bulk Resolve</button>
-                </div>
-
-                <div class="issues-table-container">
-                    <table id="issues-table" class="issues-table">
-                        <thead>
-                            <tr>
-                                <th><input type="checkbox" id="select-all"></th>
-                                <th>Issue ID</th>
-                                <th>Category</th>
-                                <th>Priority</th>
-                                <th>Location</th>
-                                <th>Status</th>
-                                <th>Assigned Officer</th>
-                                <th>SLA</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="issues-table-body">
-                            <!-- Table rows will be populated by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Analytics Tab -->
-            <div id="analytics" class="tab-content">
-                <div class="analytics-grid">
-                    <div class="analytics-section">
-                        <h3>Monthly Trends</h3>
-                        <div class="chart-container" style="position: relative; height: 300px;">
-                            <canvas id="monthly-trend-chart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="analytics-section">
-                        <h3>Category Breakdown</h3>
-                        <div class="chart-container" style="position: relative; height: 300px;">
-                            <canvas id="category-chart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="analytics-section">
-                        <h3>Resolution Time Analysis</h3>
-                        <div class="resolution-stats">
-                            <div class="stat-item">
-                                <span class="stat-label">Average Resolution Time</span>
-                                <span class="stat-value">3.2 days</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Fastest Resolution</span>
-                                <span class="stat-value">4 hours</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Slowest Resolution</span>
-                                <span class="stat-value">12 days</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="analytics-section">
-                        <h3>Export Reports</h3>
-                        <div class="export-buttons">
-                            <button class="btn btn--outline" id="export-pdf">
-                                <i class="fas fa-file-pdf"></i>
-                                Export PDF
-                            </button>
-                            <button class="btn btn--outline" id="export-excel">
-                                <i class="fas fa-file-excel"></i>
-                                Export Excel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Team Management Tab -->
-            <div id="team-management" class="tab-content">
-                <div class="team-grid">
-                    <div class="team-section">
-                        <h3>Field Teams</h3>
-                        <div id="team-assignments" class="team-assignments">
-                            <!-- Team assignments will be populated by JavaScript -->
-                        </div>
-                    </div>
-
-                    <div class="team-section">
-                        <h3>Officer Performance</h3>
-                        <div id="officer-performance" class="officer-performance">
-                            <!-- Officer performance will be populated by JavaScript -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Report Issue Modal -->
-    <div id="report-modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Report New Issue</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="report-form">
-                    <div class="form-group">
-                        <label class="form-label">Photo of Issue</label>
-                        <div class="photo-upload" id="photo-upload">
-                            <i class="fas fa-camera"></i>
-                            <p>Click to upload or drag & drop photo</p>
-                            <input type="file" id="photo-input" accept="image/*" hidden>
-                        </div>
-                        <div id="photo-preview" class="photo-preview hidden"></div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Date & Time</label>
-                            <input type="text" class="form-control" id="issue-datetime" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Location</label>
-                            <input type="text" class="form-control" id="issue-location" placeholder="Auto-detected location">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-control" id="issue-description" rows="3" placeholder="Describe the issue..."></textarea>
-                        <button type="button" class="voice-btn" id="voice-input">
-                            <i class="fas fa-microphone"></i>
+    <!-- App Shell -->
+    <div id="app" class="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="container">
+                <div class="header-content">
+                    <h1 class="app-title">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
+                            <circle cx="7" cy="19" r="2" stroke="currentColor" stroke-width="2"/>
+                            <circle cx="17" cy="19" r="2" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        CityBus
+                    </h1>
+                    <div class="header-actions">
+                        <button class="btn btn--sm btn--outline" id="location-btn" aria-label="Get current location">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                            </svg>
                         </button>
                     </div>
+                </div>
+            </div>
+        </header>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Category</label>
-                            <select class="form-control" id="issue-category" required>
-                                <option value="">Select Category</option>
-                                <option value="Roads">Roads</option>
-                                <option value="Sanitation">Sanitation</option>
-                                <option value="Streetlights">Streetlights</option>
-                                <option value="Water">Water</option>
-                                <option value="Parks">Parks</option>
-                                <option value="Electricity">Electricity</option>
-                                <option value="Emergency">Emergency</option>
-                            </select>
+        <!-- Main Content Views -->
+        <main class="app-main">
+            <!-- Home/Map View -->
+            <div id="home-view" class="view active">
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <div class="container">
+                        <div class="search-bar">
+                            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+                                <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            <input 
+                                type="text" 
+                                id="search-input" 
+                                class="search-input" 
+                                placeholder="Search stops or routes..."
+                                autocomplete="off"
+                            >
+                            <button class="search-clear" id="search-clear" aria-label="Clear search">×</button>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Priority</label>
-                            <select class="form-control" id="issue-priority" required>
-                                <option value="">Select Priority</option>
-                                <option value="Low">Low</option>
-                                <option value="Medium">Medium</option>
-                                <option value="High">High</option>
-                                <option value="Critical">Critical</option>
-                            </select>
+                        <div id="search-results" class="search-results hidden"></div>
+                    </div>
+                </div>
+
+                <!-- Map Container -->
+                <div class="map-container">
+                    <div id="map" class="map"></div>
+                    <div class="map-legend">
+                        <div class="legend-item">
+                            <div class="legend-dot bus-dot"></div>
+                            <span>Buses</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot stop-dot"></div>
+                            <span>Bus Stops</span>
                         </div>
                     </div>
+                </div>
 
-                    <div class="modal-actions">
-                        <button type="button" class="btn btn--outline modal-cancel">Cancel</button>
-                        <button type="submit" class="btn btn--primary">Submit Report</button>
+                <!-- Nearby Stops -->
+                <div class="nearby-section">
+                    <div class="container">
+                        <div class="section-header">
+                            <h2>Nearby Stops</h2>
+                            <button class="btn btn--sm btn--outline" id="refresh-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                    <path d="M21 12c0 5-4 9-9 9s-9-4-9-9 4-9 9-9c2.3 0 4.3.8 6 2.1" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M21 6v6h-6" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                                Refresh
+                            </button>
+                        </div>
+                        <div id="nearby-stops" class="stops-grid"></div>
                     </div>
-                </form>
+                </div>
+
+                <!-- Favorites Section -->
+                <div class="favorites-section">
+                    <div class="container">
+                        <h2>Favorites</h2>
+                        <div id="favorites-list" class="favorites-grid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stop Details View -->
+            <div id="stop-view" class="view">
+                <div class="container">
+                    <div class="view-header">
+                        <button class="btn btn--sm btn--outline back-btn" id="stop-back-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M19 12H5" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            Back
+                        </button>
+                        <button class="btn btn--sm btn--outline" id="favorite-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="stop-details" class="stop-details"></div>
+                    <div id="stop-buses" class="buses-list"></div>
+                </div>
+            </div>
+
+            <!-- Trip Tracking View -->
+            <div id="tracking-view" class="view">
+                <div class="container">
+                    <div class="view-header">
+                        <button class="btn btn--sm btn--outline back-btn" id="tracking-back-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M19 12H5" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            Back
+                        </button>
+                        <button class="btn btn--sm btn--secondary" id="stop-tracking-btn">
+                            Stop Tracking
+                        </button>
+                    </div>
+                    <div id="tracking-info" class="tracking-info"></div>
+                    <div id="tracking-map" class="tracking-map"></div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="settings-view" class="view">
+                <div class="container">
+                    <div class="view-header">
+                        <button class="btn btn--sm btn--outline back-btn" id="settings-back-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M19 12H5" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            Back
+                        </button>
+                    </div>
+                    <div class="settings-content">
+                        <div class="settings-group">
+                            <h3>Notifications</h3>
+                            <div class="setting-item">
+                                <label class="setting-label">
+                                    <input type="checkbox" id="notifications-toggle" checked>
+                                    <span class="setting-text">Bus arrival alerts</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="settings-group">
+                            <h3>Appearance</h3>
+                            <div class="setting-item">
+                                <label class="form-label">Theme</label>
+                                <select id="theme-select" class="form-control">
+                                    <option value="light">Light</option>
+                                    <option value="dark">Dark</option>
+                                    <option value="auto">Auto</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="settings-group">
+                            <h3>Data</h3>
+                            <div class="setting-item">
+                                <label class="form-label">Update Interval</label>
+                                <select id="update-interval" class="form-control">
+                                    <option value="30">30 seconds</option>
+                                    <option value="60">1 minute</option>
+                                    <option value="90">90 seconds</option>
+                                </select>
+                            </div>
+                            <button class="btn btn--secondary btn--full-width" id="clear-favorites">
+                                Clear All Favorites
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-view="home-view">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m0 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <span>Home</span>
+            </button>
+            <button class="nav-item" data-view="search">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+                    <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <span>Search</span>
+            </button>
+            <button class="nav-item" data-view="tracking-view">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                </svg>
+                <span>Track</span>
+            </button>
+            <button class="nav-item" data-view="settings-view">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="2"/>
+                    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <span>Settings</span>
+            </button>
+        </nav>
+
+        <!-- Loading Overlay -->
+        <div id="loading" class="loading-overlay hidden">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Loading...</p>
             </div>
         </div>
-    </div>
 
-    <!-- Issue Details Modal -->
-    <div id="issue-details-modal" class="modal hidden">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h3 id="issue-title">Issue Details</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="issue-details-content">
-                    <!-- Content will be populated by JavaScript -->
+        <!-- Toast Notifications -->
+        <div id="toast-container" class="toast-container"></div>
+
+        <!-- Offline Indicator -->
+        <div id="offline-indicator" class="offline-indicator hidden">
+            <div class="container">
+                <div class="offline-content">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M1 9l11-7 11 7-11 7-11-7z" stroke="currentColor" stroke-width="2"/>
+                        <path d="M1 17l11-7 11 7-11 7-11-7z" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 2v20" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span>Offline - Showing cached data</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Government Issue Details Modal -->
-    <div id="gov-issue-details-modal" class="modal hidden">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h3 id="gov-issue-title">Issue Management</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="gov-issue-details-content">
-                    <!-- Content will be populated by JavaScript -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>

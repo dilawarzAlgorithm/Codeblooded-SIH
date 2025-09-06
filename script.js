@@ -1,1128 +1,891 @@
-// Global state management
-let currentUser = null;
-let currentRole = null;
-let currentIssues = [];
-let filteredIssues = [];
+// CityBus Progressive Web App
+class CityBusApp {
+    constructor() {
+        // Immediately hide loading overlay
+        this.hideLoading();
+        
+        this.data = {
+            stops: [
+                {
+                    id: "stop_001",
+                    name: "Central Market",
+                    lat: 23.2599,
+                    lng: 77.4126,
+                    routes: ["15", "7A", "22"],
+                    distance: 0.2
+                },
+                {
+                    id: "stop_002", 
+                    name: "Railway Station",
+                    lat: 23.2650,
+                    lng: 77.4200,
+                    routes: ["15", "18", "3B"],
+                    distance: 0.5
+                },
+                {
+                    id: "stop_003",
+                    name: "Hospital Junction", 
+                    lat: 23.2700,
+                    lng: 77.4300,
+                    routes: ["7A", "12", "25"],
+                    distance: 0.8
+                },
+                {
+                    id: "stop_004",
+                    name: "Medical College",
+                    lat: 23.2750,
+                    lng: 77.4400, 
+                    routes: ["7A", "18"],
+                    distance: 1.2
+                },
+                {
+                    id: "stop_005",
+                    name: "Industrial Area",
+                    lat: 23.2800,
+                    lng: 77.4500,
+                    routes: ["22", "25"],
+                    distance: 2.1
+                }
+            ],
+            routes: [
+                {
+                    id: "15",
+                    name: "Route 15",
+                    destination: "Railway Station",
+                    color: "#2196F3",
+                    frequency: "10-15 min"
+                },
+                {
+                    id: "7A", 
+                    name: "Route 7A",
+                    destination: "Medical College",
+                    color: "#4CAF50",
+                    frequency: "15-20 min"
+                },
+                {
+                    id: "22",
+                    name: "Route 22", 
+                    destination: "Industrial Area",
+                    color: "#FF9800",
+                    frequency: "20-25 min"
+                },
+                {
+                    id: "18",
+                    name: "Route 18",
+                    destination: "Medical College", 
+                    color: "#9C27B0",
+                    frequency: "12-18 min"
+                },
+                {
+                    id: "3B",
+                    name: "Route 3B",
+                    destination: "City Center",
+                    color: "#F44336", 
+                    frequency: "25-30 min"
+                },
+                {
+                    id: "12",
+                    name: "Route 12",
+                    destination: "University",
+                    color: "#607D8B",
+                    frequency: "20-25 min"
+                },
+                {
+                    id: "25",
+                    name: "Route 25",
+                    destination: "Airport",
+                    color: "#795548",
+                    frequency: "30-40 min"
+                }
+            ],
+            buses: [
+                {
+                    id: "MH01-2847",
+                    route: "15", 
+                    lat: 23.2620,
+                    lng: 77.4150,
+                    speed: 25,
+                    heading: 45,
+                    capacity: 40,
+                    occupancy: 28,
+                    nextStop: "stop_001",
+                    eta: 5,
+                    status: "on_time"
+                },
+                {
+                    id: "MH01-1234",
+                    route: "7A",
+                    lat: 23.2580,
+                    lng: 77.4100, 
+                    speed: 15,
+                    heading: 90,
+                    capacity: 35,
+                    occupancy: 32,
+                    nextStop: "stop_001", 
+                    eta: 8,
+                    status: "delayed"
+                },
+                {
+                    id: "MH01-5678",
+                    route: "22",
+                    lat: 23.2720,
+                    lng: 77.4250,
+                    speed: 30,
+                    heading: 180,
+                    capacity: 45,
+                    occupancy: 15,
+                    nextStop: "stop_003",
+                    eta: 3,
+                    status: "on_time"
+                }
+            ],
+            userLocation: {
+                lat: 23.2590,
+                lng: 77.4120
+            },
+            settings: {
+                notifications: true,
+                language: "en",
+                theme: "light",
+                updateInterval: 30
+            }
+        };
 
-// Data from the provided JSON
-const appData = {
-  "issues": [
-    {
-      "id": "CC001",
-      "title": "Pothole on Main Street",
-      "description": "Large pothole near the bus stop causing traffic issues",
-      "category": "Roads",
-      "priority": "High",
-      "status": "In Progress",
-      "location": "Main Street, Ward 4",
-      "coordinates": "28.6139, 77.2090",
-      "reportedBy": "Rajesh Kumar",
-      "reportedDate": "2025-09-03T10:30:00",
-      "assignedOfficer": "Suresh Mehta",
-      "assignedTeam": "Road Maintenance Team A",
-      "department": "Public Works Department",
-      "photos": ["pothole_before.jpg"],
-      "resolutionPhotos": [],
-      "slaDeadline": "2025-09-08T10:30:00",
-      "updates": [
-        {"date": "2025-09-03T11:00:00", "status": "Acknowledged", "note": "Issue reported and logged"},
-        {"date": "2025-09-04T09:15:00", "status": "In Progress", "note": "Assigned to field team for assessment"}
-      ],
-      "rating": null,
-      "feedback": ""
-    },
-    {
-      "id": "CC002",
-      "title": "Garbage not collected",
-      "description": "Garbage bins overflowing for past 3 days",
-      "category": "Sanitation",
-      "priority": "Medium",
-      "status": "Resolved",
-      "location": "Sector 15, Block A",
-      "coordinates": "28.5355, 77.3910",
-      "reportedBy": "Rajesh Kumar",
-      "reportedDate": "2025-09-01T08:45:00",
-      "assignedOfficer": "Amit Verma",
-      "assignedTeam": "Sanitation Team B",
-      "department": "Sanitation Department",
-      "photos": ["garbage_overflow.jpg"],
-      "resolutionPhotos": ["garbage_collected.jpg"],
-      "slaDeadline": "2025-09-04T08:45:00",
-      "updates": [
-        {"date": "2025-09-01T09:00:00", "status": "Acknowledged", "note": "Issue logged and assigned"},
-        {"date": "2025-09-02T14:30:00", "status": "In Progress", "note": "Collection team dispatched"},
-        {"date": "2025-09-03T11:00:00", "status": "Resolved", "note": "Garbage collected and area cleaned"}
-      ],
-      "rating": 4,
-      "feedback": "Good response time, appreciate the service"
-    },
-    {
-      "id": "CC003",
-      "title": "Street light not working",
-      "description": "Street light pole number SL-456 not functioning since last week",
-      "category": "Streetlights",
-      "priority": "Medium",
-      "status": "Acknowledged",
-      "location": "Park Avenue, Sector 12",
-      "coordinates": "28.5245, 77.1855",
-      "reportedBy": "Rajesh Kumar",
-      "reportedDate": "2025-09-05T19:20:00",
-      "assignedOfficer": "Ravi Gupta",
-      "assignedTeam": "Electrical Maintenance Team",
-      "department": "Electrical Department",
-      "photos": ["broken_streetlight.jpg"],
-      "resolutionPhotos": [],
-      "slaDeadline": "2025-09-10T19:20:00",
-      "updates": [
-        {"date": "2025-09-05T20:00:00", "status": "Acknowledged", "note": "Issue reported and being reviewed"}
-      ],
-      "rating": null,
-      "feedback": ""
+        this.currentView = 'home-view';
+        this.currentStop = null;
+        this.trackingBus = null;
+        this.updateInterval = null;
+        this.favorites = this.loadFavorites();
+        this.isOnline = navigator.onLine;
+        this.lastUpdate = new Date();
+        
+        // Initialize immediately
+        this.init();
     }
-  ],
-  "citizens": [
-    {
-      "id": "U001",
-      "name": "Rajesh Kumar",
-      "email": "rajesh.kumar@email.com",
-      "phone": "+91-9876543210",
-      "address": "Main Street, Ward 4",
-      "issuesReported": 5,
-      "issuesResolved": 3,
-      "rating": 4.2,
-      "badges": ["Reporter", "Community Helper"],
-      "joinDate": "2025-07-15"
-    }
-  ],
-  "officers": [
-    {
-      "id": "O001",
-      "name": "Suresh Mehta",
-      "designation": "Assistant Engineer",
-      "department": "Public Works Department",
-      "email": "suresh.mehta@municipal.gov",
-      "phone": "+91-9876500001",
-      "assignedIssues": 12,
-      "resolvedIssues": 8,
-      "avgResolutionTime": "3.2 days",
-      "slaCompliance": "85%"
-    },
-    {
-      "id": "O002",
-      "name": "Amit Verma",
-      "designation": "Sanitation Inspector",
-      "department": "Sanitation Department",
-      "email": "amit.verma@municipal.gov",
-      "phone": "+91-9876500002",
-      "assignedIssues": 18,
-      "resolvedIssues": 15,
-      "avgResolutionTime": "2.1 days",
-      "slaCompliance": "92%"
-    }
-  ],
-  "analytics": {
-    "totalIssues": 152,
-    "openIssues": 48,
-    "inProgressIssues": 32,
-    "resolvedIssues": 90,
-    "escalatedIssues": 8,
-    "slaCompliance": "85%",
-    "avgResolutionTime": "3.2 days",
-    "citizenSatisfaction": "4.3/5",
-    "monthlyTrend": [
-      {"month": "June", "reported": 98, "resolved": 89},
-      {"month": "July", "reported": 112, "resolved": 105},
-      {"month": "August", "reported": 134, "resolved": 128},
-      {"month": "September", "reported": 48, "resolved": 42}
-    ],
-    "categoryBreakdown": {
-      "Roads": 45,
-      "Sanitation": 38,
-      "Streetlights": 25,
-      "Water": 22,
-      "Parks": 15,
-      "Electricity": 7
-    }
-  }
-};
 
-// Initialize the application
-document.addEventListener('DOMContentLoaded', function() {
-    initializeApp();
+    init() {
+        console.log('Initializing CityBus App...');
+        
+        try {
+            this.setupEventListeners();
+            this.setupSearch();
+            this.loadSettings();
+            this.renderNearbyStops();
+            this.renderFavorites();
+            this.startRealTimeUpdates();
+            this.setupOfflineHandling();
+            
+            console.log('App initialized successfully');
+            
+            // Show welcome message after a short delay
+            setTimeout(() => {
+                this.showToast('Welcome to CityBus!', 'success');
+            }, 500);
+            
+        } catch (error) {
+            console.error('App initialization error:', error);
+            this.showToast('App initialization failed', 'error');
+        }
+    }
+
+    hideLoading() {
+        const loading = document.getElementById('loading');
+        if (loading) {
+            loading.classList.add('hidden');
+            loading.style.display = 'none';
+        }
+    }
+
+    showLoading() {
+        const loading = document.getElementById('loading');
+        if (loading) {
+            loading.classList.remove('hidden');
+            loading.style.display = 'flex';
+        }
+    }
+
+    setupEventListeners() {
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const view = e.currentTarget.dataset.view;
+                if (view && view !== 'search') {
+                    this.showView(view);
+                } else if (view === 'search') {
+                    this.focusSearch();
+                }
+            });
+        });
+
+        // Back buttons
+        document.querySelectorAll('.back-btn').forEach(btn => {
+            btn.addEventListener('click', () => this.showView('home-view'));
+        });
+
+        // Location button
+        const locationBtn = document.getElementById('location-btn');
+        if (locationBtn) {
+            locationBtn.addEventListener('click', () => {
+                this.getCurrentLocation();
+            });
+        }
+
+        // Refresh button
+        const refreshBtn = document.getElementById('refresh-btn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                this.refreshData();
+            });
+        }
+
+        // Settings
+        const notificationsToggle = document.getElementById('notifications-toggle');
+        if (notificationsToggle) {
+            notificationsToggle.addEventListener('change', (e) => {
+                this.updateSetting('notifications', e.target.checked);
+            });
+        }
+
+        const themeSelect = document.getElementById('theme-select');
+        if (themeSelect) {
+            themeSelect.addEventListener('change', (e) => {
+                this.updateSetting('theme', e.target.value);
+                this.applyTheme(e.target.value);
+            });
+        }
+
+        const updateInterval = document.getElementById('update-interval');
+        if (updateInterval) {
+            updateInterval.addEventListener('change', (e) => {
+                this.updateSetting('updateInterval', parseInt(e.target.value));
+                this.restartUpdates();
+            });
+        }
+
+        const clearFavorites = document.getElementById('clear-favorites');
+        if (clearFavorites) {
+            clearFavorites.addEventListener('click', () => {
+                this.clearFavorites();
+            });
+        }
+
+        // Tracking controls
+        const stopTrackingBtn = document.getElementById('stop-tracking-btn');
+        if (stopTrackingBtn) {
+            stopTrackingBtn.addEventListener('click', () => {
+                this.stopTracking();
+            });
+        }
+    }
+
+    setupSearch() {
+        const searchInput = document.getElementById('search-input');
+        const searchClear = document.getElementById('search-clear');
+        const searchResults = document.getElementById('search-results');
+
+        if (!searchInput || !searchClear || !searchResults) return;
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            
+            if (query.length > 0) {
+                searchClear.classList.add('visible');
+                this.performSearch(query);
+            } else {
+                searchClear.classList.remove('visible');
+                searchResults.classList.add('hidden');
+            }
+        });
+
+        searchInput.addEventListener('focus', () => {
+            if (searchInput.value.length > 0) {
+                this.performSearch(searchInput.value);
+            }
+        });
+
+        searchClear.addEventListener('click', () => {
+            searchInput.value = '';
+            searchClear.classList.remove('visible');
+            searchResults.classList.add('hidden');
+            searchInput.focus();
+        });
+
+        // Close search results when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) {
+                searchResults.classList.add('hidden');
+            }
+        });
+    }
+
+    performSearch(query) {
+        const results = [];
+        const lowerQuery = query.toLowerCase();
+
+        // Search stops
+        this.data.stops.forEach(stop => {
+            if (stop.name.toLowerCase().includes(lowerQuery)) {
+                results.push({
+                    type: 'stop',
+                    data: stop,
+                    title: stop.name,
+                    subtitle: `${stop.distance} km • Routes: ${stop.routes.join(', ')}`
+                });
+            }
+        });
+
+        // Search routes
+        this.data.routes.forEach(route => {
+            if (route.name.toLowerCase().includes(lowerQuery) || 
+                route.destination.toLowerCase().includes(lowerQuery)) {
+                results.push({
+                    type: 'route',
+                    data: route,
+                    title: `${route.name} - ${route.destination}`,
+                    subtitle: `Frequency: ${route.frequency}`
+                });
+            }
+        });
+
+        this.renderSearchResults(results.slice(0, 5));
+    }
+
+    renderSearchResults(results) {
+        const container = document.getElementById('search-results');
+        if (!container) return;
+        
+        if (results.length === 0) {
+            container.innerHTML = '<div class="search-result-item">No results found</div>';
+        } else {
+            container.innerHTML = results.map(result => `
+                <div class="search-result-item" onclick="app.selectSearchResult('${result.type}', '${result.data.id}')">
+                    <div class="font-semibold">${result.title}</div>
+                    <div class="text-sm opacity-50">${result.subtitle}</div>
+                </div>
+            `).join('');
+        }
+        
+        container.classList.remove('hidden');
+    }
+
+    selectSearchResult(type, id) {
+        const searchResults = document.getElementById('search-results');
+        const searchInput = document.getElementById('search-input');
+        
+        if (searchResults) searchResults.classList.add('hidden');
+        if (searchInput) searchInput.blur();
+
+        if (type === 'stop') {
+            this.showStopDetails(id);
+        } else if (type === 'route') {
+            const stops = this.data.stops.filter(stop => stop.routes.includes(id));
+            if (stops.length > 0) {
+                this.showStopDetails(stops[0].id);
+            }
+        }
+    }
+
+    focusSearch() {
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) {
+            searchInput.focus();
+        }
+    }
+
+    showView(viewId) {
+        // Hide all views
+        document.querySelectorAll('.view').forEach(view => {
+            view.classList.remove('active');
+        });
+
+        // Show target view
+        const targetView = document.getElementById(viewId);
+        if (targetView) {
+            targetView.classList.add('active');
+        }
+
+        // Update navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.dataset.view === viewId) {
+                item.classList.add('active');
+            }
+        });
+
+        this.currentView = viewId;
+
+        // Load view-specific data
+        if (viewId === 'settings-view') {
+            this.loadSettingsView();
+        }
+    }
+
+    showStopDetails(stopId) {
+        const stop = this.data.stops.find(s => s.id === stopId);
+        if (!stop) return;
+
+        this.currentStop = stop;
+        
+        // Render stop details
+        const detailsContainer = document.getElementById('stop-details');
+        if (detailsContainer) {
+            detailsContainer.innerHTML = `
+                <div class="stop-info">
+                    <h2 class="stop-title">${stop.name}</h2>
+                    <p class="stop-subtitle">${stop.distance} km away • ${stop.routes.length} routes</p>
+                </div>
+            `;
+        }
+
+        // Update favorite button
+        const favoriteBtn = document.getElementById('favorite-btn');
+        if (favoriteBtn) {
+            const isFavorite = this.favorites.includes(stopId);
+            favoriteBtn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="${isFavorite ? 'currentColor' : 'none'}">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+            `;
+            
+            favoriteBtn.onclick = () => this.toggleFavorite(stopId);
+        }
+
+        // Render buses for this stop
+        this.renderStopBuses(stop);
+
+        this.showView('stop-view');
+    }
+
+    renderStopBuses(stop) {
+        const busesContainer = document.getElementById('stop-buses');
+        if (!busesContainer) return;
+
+        const relevantBuses = this.data.buses.filter(bus => 
+            stop.routes.includes(bus.route)
+        );
+
+        if (relevantBuses.length === 0) {
+            busesContainer.innerHTML = `
+                <div class="text-center">
+                    <p>No buses currently running on this route</p>
+                    <p class="text-sm opacity-50">Check back later or try refreshing</p>
+                </div>
+            `;
+            return;
+        }
+
+        busesContainer.innerHTML = relevantBuses.map(bus => {
+            const route = this.data.routes.find(r => r.id === bus.route);
+            const etaMinutes = Math.max(1, bus.eta + Math.floor(Math.random() * 3) - 1);
+            
+            return `
+                <div class="bus-card fade-in">
+                    <div class="bus-header">
+                        <div class="bus-route">
+                            <span class="route-number" style="background-color: ${route ? route.color : '#666'}">${route ? route.name : bus.route}</span>
+                            <span class="route-destination">${route ? route.destination : 'Unknown'}</span>
+                        </div>
+                        <div class="bus-eta">
+                            <div class="eta-time">${etaMinutes} min</div>
+                            <div class="eta-label">ETA</div>
+                        </div>
+                    </div>
+                    <div class="bus-details">
+                        <span class="bus-status bus-status--${bus.status.replace('_', '-')}">${bus.status.replace('_', ' ')}</span>
+                        <span class="bus-capacity">${bus.occupancy}/${bus.capacity} seats</span>
+                    </div>
+                    <button class="track-button" onclick="app.startTracking('${bus.id}')">
+                        Track This Bus
+                    </button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    startTracking(busId) {
+        const bus = this.data.buses.find(b => b.id === busId);
+        if (!bus) return;
+
+        this.trackingBus = bus;
+        this.renderTrackingView();
+        this.showView('tracking-view');
+        this.showToast('Now tracking bus ' + bus.id, 'success');
+
+        if (this.data.settings.notifications) {
+            this.scheduleArrivalNotification(bus);
+        }
+    }
+
+    renderTrackingView() {
+        if (!this.trackingBus) return;
+
+        const route = this.data.routes.find(r => r.id === this.trackingBus.route);
+        const stop = this.data.stops.find(s => s.id === this.trackingBus.nextStop);
+        const eta = Math.max(1, this.trackingBus.eta + Math.floor(Math.random() * 2) - 1);
+
+        const trackingInfo = document.getElementById('tracking-info');
+        if (trackingInfo) {
+            trackingInfo.innerHTML = `
+                <div class="tracking-status">
+                    <div class="tracking-eta">${eta}</div>
+                    <div class="tracking-label">minutes to arrival</div>
+                </div>
+                <div class="tracking-details">
+                    <div class="tracking-detail">
+                        <div class="detail-value">${this.trackingBus.id}</div>
+                        <div class="detail-label">Bus Number</div>
+                    </div>
+                    <div class="tracking-detail">
+                        <div class="detail-value" style="color: ${route ? route.color : '#666'}">${route ? route.name : this.trackingBus.route}</div>
+                        <div class="detail-label">Route</div>
+                    </div>
+                    <div class="tracking-detail">
+                        <div class="detail-value">${this.trackingBus.speed} km/h</div>
+                        <div class="detail-label">Speed</div>
+                    </div>
+                    <div class="tracking-detail">
+                        <div class="detail-value">${stop ? stop.name : 'Unknown'}</div>
+                        <div class="detail-label">Next Stop</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        const trackingMap = document.getElementById('tracking-map');
+        if (trackingMap) {
+            trackingMap.innerHTML = `
+                <div style="text-align: center; color: var(--color-text-secondary);">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="margin-bottom: 16px;">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                    </svg>
+                    <p>Live tracking map</p>
+                    <p style="font-size: 12px;">Bus location updates every ${this.data.settings.updateInterval} seconds</p>
+                </div>
+            `;
+        }
+    }
+
+    stopTracking() {
+        this.trackingBus = null;
+        this.showView('home-view');
+        this.showToast('Stopped tracking bus', 'info');
+    }
+
+    scheduleArrivalNotification(bus) {
+        setTimeout(() => {
+            if (this.trackingBus && this.trackingBus.id === bus.id) {
+                this.showToast(`Bus ${bus.id} arriving in 1 minute!`, 'warning');
+            }
+        }, Math.max(1000, (bus.eta - 1) * 1000));
+    }
+
+    toggleFavorite(stopId) {
+        const index = this.favorites.indexOf(stopId);
+        if (index === -1) {
+            this.favorites.push(stopId);
+            this.showToast('Added to favorites', 'success');
+        } else {
+            this.favorites.splice(index, 1);
+            this.showToast('Removed from favorites', 'info');
+        }
+        
+        this.saveFavorites();
+        this.renderFavorites();
+        
+        if (this.currentView === 'stop-view' && this.currentStop && this.currentStop.id === stopId) {
+            const favoriteBtn = document.getElementById('favorite-btn');
+            if (favoriteBtn) {
+                const isFavorite = this.favorites.includes(stopId);
+                favoriteBtn.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="${isFavorite ? 'currentColor' : 'none'}">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                `;
+            }
+        }
+    }
+
+    renderNearbyStops() {
+        const container = document.getElementById('nearby-stops');
+        if (!container) return;
+
+        const stops = this.data.stops.sort((a, b) => a.distance - b.distance);
+
+        container.innerHTML = stops.map(stop => `
+            <div class="stop-card" onclick="app.showStopDetails('${stop.id}')">
+                <div class="stop-card-header">
+                    <h3 class="stop-name">${stop.name}</h3>
+                    <span class="stop-distance">${stop.distance} km</span>
+                </div>
+                <div class="stop-routes">
+                    ${stop.routes.map(routeId => {
+                        const route = this.data.routes.find(r => r.id === routeId);
+                        return `<span class="route-badge" style="background-color: ${route ? route.color : '#666'}">${routeId}</span>`;
+                    }).join('')}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    renderFavorites() {
+        const container = document.getElementById('favorites-list');
+        if (!container) return;
+
+        const favoriteStops = this.data.stops.filter(stop => this.favorites.includes(stop.id));
+
+        if (favoriteStops.length === 0) {
+            container.innerHTML = `
+                <div class="text-center opacity-50">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="margin-bottom: 16px;">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <p>No favorite stops yet</p>
+                    <p class="text-sm">Tap the heart icon on any stop to add it here</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = favoriteStops.map(stop => `
+            <div class="stop-card" onclick="app.showStopDetails('${stop.id}')">
+                <div class="stop-card-header">
+                    <h3 class="stop-name">${stop.name}</h3>
+                    <span class="stop-distance">${stop.distance} km</span>
+                </div>
+                <div class="stop-routes">
+                    ${stop.routes.map(routeId => {
+                        const route = this.data.routes.find(r => r.id === routeId);
+                        return `<span class="route-badge" style="background-color: ${route ? route.color : '#666'}">${routeId}</span>`;
+                    }).join('')}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    getCurrentLocation() {
+        this.showLoading();
+        
+        setTimeout(() => {
+            this.hideLoading();
+            this.data.userLocation.lat += (Math.random() - 0.5) * 0.001;
+            this.data.userLocation.lng += (Math.random() - 0.5) * 0.001;
+            
+            this.data.stops.forEach(stop => {
+                const distance = this.calculateDistance(
+                    this.data.userLocation.lat,
+                    this.data.userLocation.lng,
+                    stop.lat,
+                    stop.lng
+                );
+                stop.distance = parseFloat(distance.toFixed(1));
+            });
+            
+            this.renderNearbyStops();
+            this.showToast('Location updated', 'success');
+        }, 1000);
+    }
+
+    calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    refreshData() {
+        this.showLoading();
+        
+        setTimeout(() => {
+            this.data.buses.forEach(bus => {
+                bus.eta = Math.max(1, bus.eta + Math.floor(Math.random() * 3) - 1);
+                bus.lat += (Math.random() - 0.5) * 0.001;
+                bus.lng += (Math.random() - 0.5) * 0.001;
+                bus.occupancy = Math.min(bus.capacity, Math.max(0, bus.occupancy + Math.floor(Math.random() * 5) - 2));
+            });
+            
+            this.lastUpdate = new Date();
+            this.hideLoading();
+            this.renderNearbyStops();
+            
+            if (this.currentView === 'stop-view' && this.currentStop) {
+                this.renderStopBuses(this.currentStop);
+            }
+            
+            if (this.trackingBus) {
+                this.renderTrackingView();
+            }
+            
+            this.showToast('Data refreshed', 'success');
+        }, 1000);
+    }
+
+    startRealTimeUpdates() {
+        this.updateInterval = setInterval(() => {
+            if (this.isOnline) {
+                this.data.buses.forEach(bus => {
+                    if (Math.random() > 0.7) {
+                        bus.eta = Math.max(1, bus.eta - 1);
+                        if (bus.eta <= 0) {
+                            bus.eta = Math.floor(Math.random() * 15) + 5;
+                        }
+                    }
+                });
+
+                if (this.currentView === 'stop-view' && this.currentStop) {
+                    this.renderStopBuses(this.currentStop);
+                }
+                
+                if (this.trackingBus) {
+                    this.renderTrackingView();
+                }
+            }
+        }, this.data.settings.updateInterval * 1000);
+    }
+
+    restartUpdates() {
+        if (this.updateInterval) {
+            clearInterval(this.updateInterval);
+        }
+        this.startRealTimeUpdates();
+    }
+
+    setupOfflineHandling() {
+        window.addEventListener('online', () => {
+            this.isOnline = true;
+            const offlineIndicator = document.getElementById('offline-indicator');
+            if (offlineIndicator) {
+                offlineIndicator.classList.remove('show');
+            }
+            this.showToast('Back online', 'success');
+        });
+
+        window.addEventListener('offline', () => {
+            this.isOnline = false;
+            const offlineIndicator = document.getElementById('offline-indicator');
+            if (offlineIndicator) {
+                offlineIndicator.classList.add('show');
+            }
+            this.showToast('You are offline', 'warning');
+        });
+
+        if (!this.isOnline) {
+            const offlineIndicator = document.getElementById('offline-indicator');
+            if (offlineIndicator) {
+                offlineIndicator.classList.add('show');
+            }
+        }
+    }
+
+    loadSettings() {
+        try {
+            const saved = localStorage.getItem('citybus-settings');
+            if (saved) {
+                this.data.settings = { ...this.data.settings, ...JSON.parse(saved) };
+            }
+            this.applyTheme(this.data.settings.theme);
+        } catch (error) {
+            console.warn('Could not load settings from localStorage');
+        }
+    }
+
+    loadSettingsView() {
+        try {
+            const notificationsToggle = document.getElementById('notifications-toggle');
+            const themeSelect = document.getElementById('theme-select');
+            const updateInterval = document.getElementById('update-interval');
+
+            if (notificationsToggle) notificationsToggle.checked = this.data.settings.notifications;
+            if (themeSelect) themeSelect.value = this.data.settings.theme;
+            if (updateInterval) updateInterval.value = this.data.settings.updateInterval;
+        } catch (error) {
+            console.warn('Could not load settings view');
+        }
+    }
+
+    updateSetting(key, value) {
+        try {
+            this.data.settings[key] = value;
+            localStorage.setItem('citybus-settings', JSON.stringify(this.data.settings));
+        } catch (error) {
+            console.warn('Could not save settings to localStorage');
+        }
+    }
+
+    applyTheme(theme) {
+        try {
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-color-scheme', 'dark');
+            } else if (theme === 'light') {
+                document.documentElement.setAttribute('data-color-scheme', 'light');
+            } else {
+                document.documentElement.removeAttribute('data-color-scheme');
+            }
+        } catch (error) {
+            console.warn('Could not apply theme');
+        }
+    }
+
+    loadFavorites() {
+        try {
+            const saved = localStorage.getItem('citybus-favorites');
+            return saved ? JSON.parse(saved) : [];
+        } catch (error) {
+            console.warn('Could not load favorites from localStorage');
+            return [];
+        }
+    }
+
+    saveFavorites() {
+        try {
+            localStorage.setItem('citybus-favorites', JSON.stringify(this.favorites));
+        } catch (error) {
+            console.warn('Could not save favorites to localStorage');
+        }
+    }
+
+    clearFavorites() {
+        this.favorites = [];
+        this.saveFavorites();
+        this.renderFavorites();
+        this.showToast('All favorites cleared', 'info');
+    }
+
+    showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = `toast toast--${type}`;
+        toast.textContent = message;
+        
+        container.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 100);
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    container.removeChild(toast);
+                }
+            }, 300);
+        }, 3000);
+    }
+}
+
+// Initialize the app when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing app...');
+    window.app = new CityBusApp();
 });
 
-function initializeApp() {
-    currentIssues = [...appData.issues];
-    filteredIssues = [...appData.issues];
-    
-    setupEventListeners();
-    showPage('landing-page');
+// Fallback initialization for cases where DOM is already loaded
+if (document.readyState !== 'loading') {
+    console.log('Document already loaded, initializing immediately...');
+    window.app = new CityBusApp();
 }
-
-function setupEventListeners() {
-    // Use event delegation for better reliability
-    document.addEventListener('click', function(e) {
-        const target = e.target;
-        const id = target.id;
-        const classList = target.classList;
-        
-        // Handle role login buttons
-        if (id === 'citizen-login') {
-            e.preventDefault();
-            loginAs('citizen');
-            return;
-        }
-        
-        if (id === 'government-login') {
-            e.preventDefault();
-            loginAs('government');
-            return;
-        }
-        
-        // Handle logout buttons
-        if (id === 'logout-btn' || id === 'gov-logout-btn') {
-            e.preventDefault();
-            logout();
-            return;
-        }
-        
-        // Handle report issue button
-        if (id === 'report-issue-btn') {
-            e.preventDefault();
-            openReportModal();
-            return;
-        }
-        
-        // Handle tab buttons
-        if (classList.contains('tab-btn')) {
-            e.preventDefault();
-            const tabId = target.getAttribute('data-tab');
-            if (tabId) {
-                switchTab(tabId);
-            }
-            return;
-        }
-        
-        // Handle issue cards
-        if (classList.contains('issue-card') || target.closest('.issue-card')) {
-            const card = classList.contains('issue-card') ? target : target.closest('.issue-card');
-            const issueId = card.getAttribute('data-issue-id');
-            if (issueId) {
-                const issue = currentIssues.find(i => i.id === issueId);
-                if (issue) {
-                    openIssueDetails(issue);
-                }
-            }
-            return;
-        }
-        
-        // Handle modal close buttons
-        if (classList.contains('modal-close') || classList.contains('modal-cancel')) {
-            closeModals();
-            return;
-        }
-        
-        // Handle photo upload
-        if (id === 'photo-upload') {
-            const photoInput = document.getElementById('photo-input');
-            if (photoInput) {
-                photoInput.click();
-            }
-            return;
-        }
-        
-        // Handle filter buttons
-        if (classList.contains('filter-btn')) {
-            const filter = target.getAttribute('data-filter');
-            if (filter) {
-                filterMap(filter);
-            }
-            return;
-        }
-        
-        // Handle voice input
-        if (id === 'voice-input') {
-            e.preventDefault();
-            target.style.background = '#e74c3c';
-            setTimeout(() => {
-                target.style.background = '';
-                const descInput = document.getElementById('issue-description');
-                if (descInput) {
-                    descInput.value += ' [Voice input recorded]';
-                }
-            }, 2000);
-            return;
-        }
-    });
-    
-    // Handle form submission
-    document.addEventListener('submit', function(e) {
-        if (e.target.id === 'report-form') {
-            e.preventDefault();
-            submitReport(e);
-        }
-    });
-    
-    // Handle change events
-    document.addEventListener('change', function(e) {
-        const target = e.target;
-        const id = target.id;
-        
-        if (id === 'photo-input') {
-            handlePhotoUpload(e);
-        } else if (id === 'status-filter' || id === 'category-filter') {
-            applyFilters();
-        } else if (id === 'search-issues' || id === 'dept-filter' || id === 'priority-filter' || id === 'mgmt-status-filter') {
-            applyGovFilters();
-        } else if (id === 'select-all') {
-            toggleSelectAll();
-        }
-    });
-    
-    // Handle input events for search
-    document.addEventListener('input', function(e) {
-        if (e.target.id === 'search-issues') {
-            applyGovFilters();
-        }
-    });
-}
-
-function loginAs(role) {
-    currentRole = role;
-    
-    if (role === 'citizen') {
-        currentUser = appData.citizens[0];
-        showPage('citizen-dashboard');
-        setTimeout(() => {
-            loadCitizenDashboard();
-        }, 50);
-    } else {
-        currentUser = { name: 'Admin Officer', role: 'Government' };
-        showPage('government-dashboard');
-        setTimeout(() => {
-            loadGovernmentDashboard();
-        }, 50);
-    }
-}
-
-function logout() {
-    currentUser = null;
-    currentRole = null;
-    showPage('landing-page');
-}
-
-function showPage(pageId) {
-    // Hide all pages
-    const pages = document.querySelectorAll('.page-container');
-    pages.forEach(page => {
-        page.classList.add('hidden');
-    });
-    
-    // Show target page
-    const targetPage = document.getElementById(pageId);
-    if (targetPage) {
-        targetPage.classList.remove('hidden');
-    }
-}
-
-function switchTab(tabId) {
-    // Find the active page container
-    const activePage = document.querySelector('.page-container:not(.hidden)');
-    if (!activePage) return;
-    
-    // Update tab buttons
-    const tabButtons = activePage.querySelectorAll('.tab-btn');
-    tabButtons.forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    const activeButton = activePage.querySelector(`[data-tab="${tabId}"]`);
-    if (activeButton) {
-        activeButton.classList.add('active');
-    }
-    
-    // Update tab content
-    const tabContents = activePage.querySelectorAll('.tab-content');
-    tabContents.forEach(content => {
-        content.classList.remove('active');
-    });
-    
-    const activeContent = activePage.querySelector(`#${tabId}`);
-    if (activeContent) {
-        activeContent.classList.add('active');
-    }
-    
-    // Load specific content
-    setTimeout(() => {
-        if (tabId === 'community-map') {
-            loadCommunityMap();
-        } else if (tabId === 'overview' && currentRole === 'government') {
-            loadOverviewCharts();
-        } else if (tabId === 'analytics' && currentRole === 'government') {
-            loadAnalyticsCharts();
-        } else if (tabId === 'team-management' && currentRole === 'government') {
-            loadTeamManagement();
-        }
-    }, 50);
-}
-
-function loadCitizenDashboard() {
-    // Set current date/time
-    const now = new Date();
-    const datetimeInput = document.getElementById('issue-datetime');
-    const locationInput = document.getElementById('issue-location');
-    
-    if (datetimeInput) {
-        datetimeInput.value = now.toLocaleString();
-    }
-    if (locationInput) {
-        locationInput.value = 'Auto-detected: Main Street, Ward 4';
-    }
-    
-    // Load user issues
-    loadMyIssues();
-    loadCommunityMap();
-}
-
-function loadMyIssues() {
-    const userIssues = currentIssues.filter(issue => issue.reportedBy === currentUser.name);
-    filteredIssues = userIssues;
-    renderIssueCards();
-}
-
-function renderIssueCards() {
-    const container = document.getElementById('issues-grid');
-    if (!container) return;
-    
-    container.innerHTML = '';
-    
-    if (filteredIssues.length === 0) {
-        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--color-text-secondary); padding: 40px;">No issues found. Click "Report Issue" to submit your first report.</div>';
-        return;
-    }
-    
-    filteredIssues.forEach(issue => {
-        const card = createIssueCard(issue);
-        container.appendChild(card);
-    });
-}
-
-function createIssueCard(issue) {
-    const card = document.createElement('div');
-    card.className = 'issue-card';
-    card.setAttribute('data-issue-id', issue.id);
-    
-    const statusClass = issue.status.toLowerCase().replace(' ', '-');
-    const priorityClass = issue.priority.toLowerCase();
-    
-    card.innerHTML = `
-        <div class="issue-card-header">
-            <span class="issue-id">${issue.id}</span>
-            <span class="status-badge ${statusClass}">${issue.status}</span>
-        </div>
-        <div class="issue-photo">
-            <i class="fas fa-image"></i>
-        </div>
-        <h4 class="issue-title">${issue.title}</h4>
-        <div class="issue-location">
-            <i class="fas fa-map-marker-alt"></i>
-            ${issue.location}
-        </div>
-        <div class="issue-footer">
-            <span class="issue-date">${formatDate(issue.reportedDate)}</span>
-            <span class="priority-badge ${priorityClass}">${issue.priority}</span>
-        </div>
-    `;
-    
-    return card;
-}
-
-function loadCommunityMap() {
-    const mapView = document.getElementById('community-map-view');
-    if (!mapView) return;
-    
-    mapView.innerHTML = '';
-    
-    const areas = [
-        { name: 'Ward 1', issues: 3, category: 'roads' },
-        { name: 'Ward 2', issues: 5, category: 'sanitation' },
-        { name: 'Ward 3', issues: 2, category: 'streetlights' },
-        { name: 'Ward 4', issues: 4, category: 'water' },
-        { name: 'Ward 5', issues: 1, category: 'parks' },
-        { name: 'Ward 6', issues: 3, category: 'roads' },
-        { name: 'Ward 7', issues: 2, category: 'sanitation' },
-        { name: 'Ward 8', issues: 1, category: 'streetlights' },
-        { name: 'Ward 9', issues: 3, category: 'water' },
-        { name: 'Ward 10', issues: 2, category: 'parks' },
-        { name: 'Ward 11', issues: 1, category: 'roads' },
-        { name: 'Ward 12', issues: 2, category: 'sanitation' }
-    ];
-    
-    areas.forEach(area => {
-        const marker = document.createElement('div');
-        marker.className = `map-marker ${area.category}`;
-        marker.textContent = area.issues;
-        marker.title = `${area.name}: ${area.issues} issues`;
-        marker.onclick = () => alert(`${area.name}\nIssues: ${area.issues}\nCategory: ${area.category}`);
-        mapView.appendChild(marker);
-    });
-}
-
-function loadGovernmentDashboard() {
-    loadOverviewCharts();
-    loadIssueManagementTable();
-    loadRecentActivity();
-}
-
-function loadOverviewCharts() {
-    // Create heatmap
-    const heatmap = document.getElementById('city-heatmap');
-    if (heatmap) {
-        heatmap.innerHTML = '';
-        
-        for (let i = 0; i < 24; i++) {
-            const cell = document.createElement('div');
-            cell.className = 'heatmap-cell';
-            const intensity = Math.random();
-            if (intensity > 0.7) cell.classList.add('high');
-            else if (intensity > 0.4) cell.classList.add('medium');
-            else cell.classList.add('low');
-            
-            cell.textContent = Math.floor(Math.random() * 10);
-            heatmap.appendChild(cell);
-        }
-    }
-    
-    // Department performance chart
-    const chartCanvas = document.getElementById('department-chart');
-    if (chartCanvas && typeof Chart !== 'undefined') {
-        const ctx = chartCanvas.getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Public Works', 'Sanitation', 'Electrical', 'Water', 'Parks'],
-                datasets: [{
-                    label: 'SLA Compliance %',
-                    data: [85, 92, 78, 83, 88],
-                    backgroundColor: ['#1FB8CD', '#FFC185', '#B4413C', '#ECEBD5', '#5D878F']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100
-                    }
-                }
-            }
-        });
-    }
-}
-
-function loadAnalyticsCharts() {
-    // Monthly trend chart
-    const monthlyCanvas = document.getElementById('monthly-trend-chart');
-    if (monthlyCanvas && typeof Chart !== 'undefined') {
-        const monthlyCtx = monthlyCanvas.getContext('2d');
-        new Chart(monthlyCtx, {
-            type: 'line',
-            data: {
-                labels: appData.analytics.monthlyTrend.map(item => item.month),
-                datasets: [
-                    {
-                        label: 'Reported',
-                        data: appData.analytics.monthlyTrend.map(item => item.reported),
-                        borderColor: '#1FB8CD',
-                        backgroundColor: 'rgba(31, 184, 205, 0.1)',
-                        tension: 0.4
-                    },
-                    {
-                        label: 'Resolved',
-                        data: appData.analytics.monthlyTrend.map(item => item.resolved),
-                        borderColor: '#5D878F',
-                        backgroundColor: 'rgba(93, 135, 143, 0.1)',
-                        tension: 0.4
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
-    }
-    
-    // Category breakdown chart
-    const categoryCanvas = document.getElementById('category-chart');
-    if (categoryCanvas && typeof Chart !== 'undefined') {
-        const categoryCtx = categoryCanvas.getContext('2d');
-        new Chart(categoryCtx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(appData.analytics.categoryBreakdown),
-                datasets: [{
-                    data: Object.values(appData.analytics.categoryBreakdown),
-                    backgroundColor: ['#1FB8CD', '#FFC185', '#B4413C', '#ECEBD5', '#5D878F', '#DB4545']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
-    }
-}
-
-function loadIssueManagementTable() {
-    const tbody = document.getElementById('issues-table-body');
-    if (!tbody) return;
-    
-    tbody.innerHTML = '';
-    
-    currentIssues.forEach(issue => {
-        const row = document.createElement('tr');
-        const slaStatus = getSLAStatus(issue.slaDeadline);
-        
-        row.innerHTML = `
-            <td><input type="checkbox" class="issue-checkbox" data-id="${issue.id}"></td>
-            <td><a href="#" onclick="openGovIssueDetails('${issue.id}')">${issue.id}</a></td>
-            <td>${issue.category}</td>
-            <td><span class="priority-badge ${issue.priority.toLowerCase()}">${issue.priority}</span></td>
-            <td>${issue.location}</td>
-            <td><span class="status-badge ${issue.status.toLowerCase().replace(' ', '-')}">${issue.status}</span></td>
-            <td>${issue.assignedOfficer}</td>
-            <td class="${slaStatus.class}">${slaStatus.text}</td>
-            <td>
-                <button class="btn btn--secondary action-btn" onclick="assignIssue('${issue.id}')">Assign</button>
-                <button class="btn btn--outline action-btn" onclick="updateStatus('${issue.id}', 'Resolved')">Resolve</button>
-            </td>
-        `;
-        
-        tbody.appendChild(row);
-    });
-}
-
-function loadRecentActivity() {
-    const activityFeed = document.getElementById('activity-feed');
-    if (!activityFeed) return;
-    
-    activityFeed.innerHTML = '';
-    
-    const activities = [
-        { type: 'new', title: 'New issue reported', meta: 'CC001 - 5 minutes ago', icon: 'fas fa-plus' },
-        { type: 'updated', title: 'Issue status updated', meta: 'CC002 - 15 minutes ago', icon: 'fas fa-edit' },
-        { type: 'resolved', title: 'Issue resolved', meta: 'CC003 - 1 hour ago', icon: 'fas fa-check' }
-    ];
-    
-    activities.forEach(activity => {
-        const item = document.createElement('div');
-        item.className = 'activity-item';
-        item.innerHTML = `
-            <div class="activity-icon ${activity.type}">
-                <i class="${activity.icon}"></i>
-            </div>
-            <div class="activity-content">
-                <div class="activity-title">${activity.title}</div>
-                <div class="activity-meta">${activity.meta}</div>
-            </div>
-        `;
-        activityFeed.appendChild(item);
-    });
-}
-
-function loadTeamManagement() {
-    const teamContainer = document.getElementById('team-assignments');
-    if (teamContainer) {
-        teamContainer.innerHTML = '';
-        
-        const teams = [
-            { name: 'Road Maintenance Team A', status: 'Active - 3 assignments' },
-            { name: 'Sanitation Team B', status: 'Active - 2 assignments' },
-            { name: 'Electrical Maintenance Team', status: 'Available' },
-            { name: 'Emergency Response Team', status: 'Active - 1 assignment' }
-        ];
-        
-        teams.forEach(team => {
-            const card = document.createElement('div');
-            card.className = 'team-card';
-            card.innerHTML = `
-                <div class="team-name">${team.name}</div>
-                <div class="team-status">${team.status}</div>
-            `;
-            teamContainer.appendChild(card);
-        });
-    }
-    
-    const officerContainer = document.getElementById('officer-performance');
-    if (officerContainer) {
-        officerContainer.innerHTML = '';
-        
-        appData.officers.forEach(officer => {
-            const card = document.createElement('div');
-            card.className = 'officer-card';
-            card.innerHTML = `
-                <div class="officer-name">${officer.name}</div>
-                <div class="officer-dept">${officer.designation}, ${officer.department}</div>
-                <div class="officer-stats">
-                    <div class="officer-stat">
-                        <strong>${officer.assignedIssues}</strong><br>
-                        <small>Assigned</small>
-                    </div>
-                    <div class="officer-stat">
-                        <strong>${officer.slaCompliance}</strong><br>
-                        <small>SLA</small>
-                    </div>
-                </div>
-            `;
-            officerContainer.appendChild(card);
-        });
-    }
-}
-
-function openReportModal() {
-    const modal = document.getElementById('report-modal');
-    if (modal) {
-        modal.classList.remove('hidden');
-    }
-}
-
-function openIssueDetails(issue) {
-    const modal = document.getElementById('issue-details-modal');
-    const content = document.getElementById('issue-details-content');
-    
-    if (!modal || !content) return;
-    
-    content.innerHTML = `
-        <div class="issue-details">
-            <div class="issue-main">
-                <div class="issue-photos">
-                    <div class="issue-photo-large">
-                        <i class="fas fa-image"></i>
-                    </div>
-                </div>
-                <div>
-                    <h4>${issue.title}</h4>
-                    <p>${issue.description}</p>
-                </div>
-                <div class="progress-timeline">
-                    <h4>Progress Timeline</h4>
-                    ${issue.updates.map(update => `
-                        <div class="timeline-item">
-                            <div class="timeline-dot"></div>
-                            <div class="timeline-content">
-                                <div class="timeline-date">${formatDate(update.date)}</div>
-                                <div class="timeline-status">${update.status}</div>
-                                <div class="timeline-note">${update.note}</div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-            <div class="issue-sidebar">
-                <div class="issue-info-section">
-                    <h4>Issue Information</h4>
-                    <div class="info-item">
-                        <span class="info-label">Issue ID:</span>
-                        <span class="info-value">${issue.id}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Category:</span>
-                        <span class="info-value">${issue.category}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Priority:</span>
-                        <span class="info-value">${issue.priority}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Status:</span>
-                        <span class="info-value">${issue.status}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Location:</span>
-                        <span class="info-value">${issue.location}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Officer:</span>
-                        <span class="info-value">${issue.assignedOfficer}</span>
-                    </div>
-                </div>
-                
-                ${getSLATimer(issue.slaDeadline)}
-                
-                ${issue.status === 'Resolved' ? `
-                    <div class="rating-section">
-                        <h4>Rate Resolution</h4>
-                        <div class="star-rating">
-                            ${[1,2,3,4,5].map(star => `
-                                <i class="fas fa-star star ${issue.rating && star <= issue.rating ? 'active' : ''}" 
-                                   onclick="rateIssue('${issue.id}', ${star})"></i>
-                            `).join('')}
-                        </div>
-                        <textarea class="form-control" placeholder="Leave feedback..." rows="3">${issue.feedback || ''}</textarea>
-                        <button class="btn btn--primary btn--sm" onclick="submitFeedback('${issue.id}')">Submit Feedback</button>
-                    </div>
-                ` : ''}
-            </div>
-        </div>
-    `;
-    
-    modal.classList.remove('hidden');
-}
-
-function submitReport(e) {
-    const category = document.getElementById('issue-category').value;
-    const priority = document.getElementById('issue-priority').value;
-    const description = document.getElementById('issue-description').value;
-    
-    if (!category || !priority || !description) {
-        alert('Please fill all required fields');
-        return;
-    }
-    
-    const newIssue = {
-        id: 'CC' + String(currentIssues.length + 1).padStart(3, '0'),
-        title: description.split('.')[0] || 'New Issue',
-        description: description,
-        category: category,
-        priority: priority,
-        status: 'Acknowledged',
-        location: document.getElementById('issue-location').value,
-        coordinates: '28.6139, 77.2090',
-        reportedBy: currentUser.name,
-        reportedDate: new Date().toISOString(),
-        assignedOfficer: 'Pending Assignment',
-        assignedTeam: 'Pending Assignment',
-        department: getDepartmentByCategory(category),
-        photos: ['new_issue.jpg'],
-        resolutionPhotos: [],
-        slaDeadline: getSLADeadline(category),
-        updates: [
-            {
-                date: new Date().toISOString(),
-                status: 'Acknowledged',
-                note: 'Issue reported and logged in the system'
-            }
-        ],
-        rating: null,
-        feedback: ''
-    };
-    
-    currentIssues.unshift(newIssue);
-    loadMyIssues();
-    closeModals();
-    
-    alert('Issue reported successfully! You will receive updates on the progress.');
-    
-    // Reset form
-    const form = document.getElementById('report-form');
-    if (form) {
-        form.reset();
-    }
-    const preview = document.getElementById('photo-preview');
-    if (preview) {
-        preview.classList.add('hidden');
-        preview.innerHTML = '';
-    }
-}
-
-function handlePhotoUpload(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const preview = document.getElementById('photo-preview');
-        if (preview) {
-            const img = document.createElement('img');
-            img.src = URL.createObjectURL(file);
-            preview.innerHTML = '';
-            preview.appendChild(img);
-            preview.classList.remove('hidden');
-        }
-    }
-}
-
-function applyFilters() {
-    const statusFilter = document.getElementById('status-filter');
-    const categoryFilter = document.getElementById('category-filter');
-    
-    const statusValue = statusFilter ? statusFilter.value : '';
-    const categoryValue = categoryFilter ? categoryFilter.value : '';
-    
-    const userIssues = currentIssues.filter(issue => issue.reportedBy === currentUser.name);
-    
-    filteredIssues = userIssues.filter(issue => {
-        const statusMatch = !statusValue || issue.status === statusValue;
-        const categoryMatch = !categoryValue || issue.category === categoryValue;
-        return statusMatch && categoryMatch;
-    });
-    
-    renderIssueCards();
-}
-
-function applyGovFilters() {
-    const searchEl = document.getElementById('search-issues');
-    const deptEl = document.getElementById('dept-filter');
-    const priorityEl = document.getElementById('priority-filter');
-    const statusEl = document.getElementById('mgmt-status-filter');
-    
-    const search = searchEl ? searchEl.value.toLowerCase() : '';
-    const dept = deptEl ? deptEl.value : '';
-    const priority = priorityEl ? priorityEl.value : '';
-    const status = statusEl ? statusEl.value : '';
-    
-    const filtered = currentIssues.filter(issue => {
-        const searchMatch = !search || 
-            issue.title.toLowerCase().includes(search) ||
-            issue.description.toLowerCase().includes(search) ||
-            issue.id.toLowerCase().includes(search);
-        const deptMatch = !dept || issue.department === dept;
-        const priorityMatch = !priority || issue.priority === priority;
-        const statusMatch = !status || issue.status === status;
-        
-        return searchMatch && deptMatch && priorityMatch && statusMatch;
-    });
-    
-    updateIssueTable(filtered);
-}
-
-function filterMap(category) {
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    const activeBtn = document.querySelector(`[data-filter="${category}"]`);
-    if (activeBtn) {
-        activeBtn.classList.add('active');
-    }
-    
-    document.querySelectorAll('.map-marker').forEach(marker => {
-        if (category === 'all' || marker.classList.contains(category)) {
-            marker.style.display = 'flex';
-        } else {
-            marker.style.display = 'none';
-        }
-    });
-}
-
-function updateIssueTable(issues) {
-    const tbody = document.getElementById('issues-table-body');
-    if (!tbody) return;
-    
-    tbody.innerHTML = '';
-    
-    issues.forEach(issue => {
-        const row = document.createElement('tr');
-        const slaStatus = getSLAStatus(issue.slaDeadline);
-        
-        row.innerHTML = `
-            <td><input type="checkbox" class="issue-checkbox" data-id="${issue.id}"></td>
-            <td><a href="#" onclick="openGovIssueDetails('${issue.id}')">${issue.id}</a></td>
-            <td>${issue.category}</td>
-            <td><span class="priority-badge ${issue.priority.toLowerCase()}">${issue.priority}</span></td>
-            <td>${issue.location}</td>
-            <td><span class="status-badge ${issue.status.toLowerCase().replace(' ', '-')}">${issue.status}</span></td>
-            <td>${issue.assignedOfficer}</td>
-            <td class="${slaStatus.class}">${slaStatus.text}</td>
-            <td>
-                <button class="btn btn--secondary action-btn" onclick="assignIssue('${issue.id}')">Assign</button>
-                <button class="btn btn--outline action-btn" onclick="updateStatus('${issue.id}', 'Resolved')">Resolve</button>
-            </td>
-        `;
-        
-        tbody.appendChild(row);
-    });
-}
-
-function closeModals() {
-    document.querySelectorAll('.modal').forEach(modal => {
-        modal.classList.add('hidden');
-    });
-}
-
-function toggleSelectAll() {
-    const selectAll = document.getElementById('select-all');
-    const checkboxes = document.querySelectorAll('.issue-checkbox');
-    
-    if (selectAll) {
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = selectAll.checked;
-        });
-    }
-}
-
-// Utility functions
-function formatDate(dateString) {
-    return new Date(dateString).toLocaleDateString('en-IN', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
-
-function getSLAStatus(deadline) {
-    const now = new Date();
-    const slaDate = new Date(deadline);
-    const timeDiff = slaDate - now;
-    const hoursLeft = Math.floor(timeDiff / (1000 * 60 * 60));
-    
-    if (hoursLeft < 0) {
-        return { text: 'Overdue', class: 'text-danger' };
-    } else if (hoursLeft < 24) {
-        return { text: `${hoursLeft}h left`, class: 'text-warning' };
-    } else {
-        const daysLeft = Math.floor(hoursLeft / 24);
-        return { text: `${daysLeft}d left`, class: 'text-success' };
-    }
-}
-
-function getSLATimer(deadline) {
-    const slaStatus = getSLAStatus(deadline);
-    if (slaStatus.text.includes('Overdue')) {
-        return `<div class="sla-timer">⚠️ SLA Overdue</div>`;
-    }
-    return `<div style="text-align: center; padding: 12px; background: var(--color-bg-3); border-radius: 8px;">
-        <strong>SLA: ${slaStatus.text}</strong>
-    </div>`;
-}
-
-function getDepartmentByCategory(category) {
-    const mapping = {
-        'Roads': 'Public Works Department',
-        'Sanitation': 'Sanitation Department',
-        'Streetlights': 'Electrical Department',
-        'Electricity': 'Electrical Department',
-        'Water': 'Water Department',
-        'Parks': 'Parks & Recreation'
-    };
-    return mapping[category] || 'General Department';
-}
-
-function getSLADeadline(category) {
-    const now = new Date();
-    const slaHours = {
-        'Emergency': 2,
-        'Water': 48,
-        'Sanitation': 72,
-        'Roads': 120,
-        'Streetlights': 120,
-        'Parks': 240,
-        'Electricity': 120
-    };
-    
-    const hours = slaHours[category] || 120;
-    return new Date(now.getTime() + hours * 60 * 60 * 1000).toISOString();
-}
-
-// Global functions for onclick handlers
-window.openGovIssueDetails = function(issueId) {
-    const issue = currentIssues.find(i => i.id === issueId);
-    if (!issue) return;
-    
-    const modal = document.getElementById('gov-issue-details-modal');
-    const content = document.getElementById('gov-issue-details-content');
-    
-    if (!modal || !content) return;
-    
-    content.innerHTML = `
-        <div class="issue-details">
-            <div class="issue-main">
-                <div class="issue-photos">
-                    <div class="issue-photo-large">
-                        <i class="fas fa-image"></i>
-                    </div>
-                </div>
-                <div>
-                    <h4>${issue.title}</h4>
-                    <p>${issue.description}</p>
-                    <p><strong>Reported by:</strong> ${issue.reportedBy}</p>
-                    <p><strong>Coordinates:</strong> ${issue.coordinates}</p>
-                </div>
-            </div>
-            <div class="issue-sidebar">
-                <div class="gov-issue-actions">
-                    <div class="action-group">
-                        <h4>Quick Actions</h4>
-                        <div class="action-buttons">
-                            <button class="btn btn--primary btn--sm" onclick="updateIssueStatus('${issue.id}', 'In Progress')">Mark In Progress</button>
-                            <button class="btn btn--success btn--sm" onclick="updateIssueStatus('${issue.id}', 'Resolved')">Mark Resolved</button>
-                            <button class="btn btn--warning btn--sm" onclick="updateIssueStatus('${issue.id}', 'Escalated')">Escalate</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    modal.classList.remove('hidden');
-};
-
-window.rateIssue = function(issueId, rating) {
-    const issue = currentIssues.find(i => i.id === issueId);
-    if (issue) {
-        issue.rating = rating;
-        document.querySelectorAll('.star').forEach((star, index) => {
-            if (index < rating) {
-                star.classList.add('active');
-            } else {
-                star.classList.remove('active');
-            }
-        });
-    }
-};
-
-window.submitFeedback = function(issueId) {
-    const issue = currentIssues.find(i => i.id === issueId);
-    const feedbackTextarea = document.querySelector('.rating-section textarea');
-    const feedback = feedbackTextarea ? feedbackTextarea.value : '';
-    if (issue) {
-        issue.feedback = feedback;
-        alert('Thank you for your feedback!');
-    }
-};
-
-window.updateIssueStatus = function(issueId, newStatus) {
-    const issue = currentIssues.find(i => i.id === issueId);
-    if (issue) {
-        issue.status = newStatus;
-        issue.updates.push({
-            date: new Date().toISOString(),
-            status: newStatus,
-            note: `Status updated to ${newStatus} by admin`
-        });
-        
-        if (currentRole === 'government') {
-            loadIssueManagementTable();
-            loadRecentActivity();
-        } else {
-            loadMyIssues();
-        }
-        
-        closeModals();
-        alert(`Issue ${issueId} status updated to ${newStatus}`);
-    }
-};
-
-window.assignIssue = function(issueId) {
-    const officers = appData.officers;
-    const officerNames = officers.map(o => o.name);
-    const selectedOfficer = prompt('Assign to officer:\n' + officerNames.join('\n') + '\n\nEnter officer name:');
-    
-    if (selectedOfficer && officerNames.includes(selectedOfficer)) {
-        const issue = currentIssues.find(i => i.id === issueId);
-        if (issue) {
-            issue.assignedOfficer = selectedOfficer;
-            issue.updates.push({
-                date: new Date().toISOString(),
-                status: 'Assigned',
-                note: `Assigned to ${selectedOfficer}`
-            });
-            loadIssueManagementTable();
-            alert(`Issue ${issueId} assigned to ${selectedOfficer}`);
-        }
-    }
-};
-
-window.updateStatus = function(issueId, status) {
-    updateIssueStatus(issueId, status);
-};
